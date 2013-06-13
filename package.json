@@ -1,0 +1,32 @@
+{
+	"contributors": [
+		"David Ellis <d.f.ellis@ieee.org>"
+	],
+	"name": "redis-broadcast",
+	"version": "0.0.9",
+	"description": "Write redis commands to a set of redises efficiently",
+    "keywords": ["redis", "broadcast"],
+    "homepage": "https://github.com/uber/redis-broadcast/",
+    "bugs": "https://github.com/uber/redis-broadcast/issues",
+    "repository": {
+        "type": "git",
+        "url": "git://git@github.com:uber/redis-broadcast.git"
+    },
+	"main": "lib/redis-broadcast.js",
+    "dependencies": {
+        "redis-manager": "*",
+        "multitransport-jsonrpc": "*"
+    },
+    "devDependencies": {
+        "docco": "*",
+        "nodeunit": "*",
+        "jshint": "*",
+        "jscoverage": "*",
+        "coveralls": "*"
+    },
+    "scripts": {
+        "realpublish": "./prepublish.sh",
+        "jshint": "test/jshint.sh",
+        "test": "npm run jshint && nodeunit test/*.js"
+    }
+}
