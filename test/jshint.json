@@ -20,5 +20,5 @@
     "node": true,
     "noempty": true,
     "maxdepth": 4,
-    "maxparams": 4
+    "maxparams": 5
 }
