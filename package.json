@@ -15,7 +15,8 @@
 	"main": "lib/redis-broadcast.js",
     "dependencies": {
         "redis-manager": "*",
-        "multitransport-jsonrpc": "*"
+        "multitransport-jsonrpc": "*",
+        "when": "*"
     },
     "devDependencies": {
         "docco": "*",

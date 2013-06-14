@@ -23,27 +23,52 @@ var myRedisServers = new RedisBroadcast({
 // Write to only one server
 var writePrimary = myRedisServers.writeTo('primary');
 writePrimary.set('foo', 'bar', callback);
+// Callback gets an object with the key being 'primary' and the value being an array of [err, result]
+// { primary: [null, 'OK'] }
 
 // Write to all servers
 var writeAll = myRedisServers.writeTo('all');
 writeAll.set('true', false, callback);
 // Callback gets object of [err, result] arrays, keys matching server names
+// {
+//     primary: [null, 'OK'],
+//     secondary: [null, 'OK'],
+//     tertiary: [null, 'OK'],
+//     quaternary: [null, 'OK']
+// }
 
 // Write to a pair of servers in parallel
 var writePrimarySecondary = myRedisServers.writeTo(['primary', 'secondary']);
 writePrimarySecondary.set('fubar', true, callback);
 // Gets object of [err, result] arrays, keys matching server names
+// {
+//     primary: [null, 'OK'],
+//     secondary: [null, 'OK']
+// }
 
 // Write to three servers in series, stopping if any returns an error
 var write123 = myRedisServers.writeTo('primary').thenTo('secondary').thenTo('tertiary');
 write123.set('hello', 'world', callback);
-// Gets array of [err, result] arrays, order matching write order
+// Gets array of objects of [err, result] arrays, keys matching server names, order of objects matching write order
+// [
+//     { primary: [null, 'OK'] },
+//     { secondary: [null, 'OK'] },
+//     { tertiary: [null, 'OK'] }
+// ]
 
 // Write to primary, then all remaining servers in parallel if no error
 var writePrimaryThenRemaining = myRedisServers.writeTo('primary').thenTo('remaining');
 writePrimaryThenRemaining.set('distributedOnlyIfSuccessful', true, callback);
-// Gets an array; first value is an [err, result] array,
+// Gets an array; first value is an object with the primary key and an [err, result] array value,
 // second is an object of [err, result] arrays, keys matching server names
+// [
+//     { primary: [null, 'OK'] },
+//     {
+//         secondary: [null, 'OK'],
+//         teritary: [null, 'OK'],
+//         quaternary: [null, 'OK']
+//     }
+// ]
 ```
 
 ## License (MIT)
