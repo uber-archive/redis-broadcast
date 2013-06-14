@@ -10,11 +10,9 @@ exports.quickCheck = function(test) {
     }, { useChildProcess: false });
     var myWriter = myServers.writeTo('primary');
     myWriter.set('foo', 'bar', function(err, result) {
-        console.log(arguments);
         test.ok(result);
         console.log(result);
-        myServers.shutdown();
-        test.done();
+        myServers.shutdown(test.done.bind(test));
     });
 };
 
