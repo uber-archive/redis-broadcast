@@ -11,7 +11,6 @@ exports.quickCheck = function(test) {
     var myWriter = myServers.writeTo('primary');
     myWriter.set('foo', 'bar', function(err, result) {
         test.ok(result);
-        console.log(result);
         myServers.shutdown(test.done.bind(test));
     });
 };
