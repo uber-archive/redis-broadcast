@@ -51,6 +51,34 @@ exports.quickCheckFailingWrite = function(test) {
     });
 };
 
+exports.fakeChaining = function(test) {
+    test.expect(2);
+    var myServers = new RedisBroadcast({
+        primary: [6379, 'localhost'],
+        secondary: [6379, 'localhost']
+    });
+    var myWriter = myServers.writeTo('primary').thenTo('secondary');
+    myWriter.set('foo', 'bar', function(err, result) {
+        test.equal(result.length, 2);
+        test.equal(result[0].primary[0], result[1].secondary[0]);
+        myServers.shutdown(test.done.bind(test));
+    });
+};
+
+exports.fakeChaining2 = function(test) {
+    test.expect(2);
+    var myServers = new RedisBroadcast({
+        primary: [6379, 'localhost'],
+        secondary: [6379, 'localhost']
+    });
+    var myWriter = myServers.writeLocally('primary').thenLocally('secondary');
+    myWriter.set('foo', 'bar', function(err, result) {
+        test.equal(result.length, 2);
+        test.equal(result[0].primary[0], result[1].secondary[0]);
+        myServers.shutdown({ killChildProc: true }, test.done.bind(test));
+    });
+};
+
 exports.jscoverage = function(test) {
     test.expect(3);
     jscoverage.coverageDetail();
