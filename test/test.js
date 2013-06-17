@@ -39,6 +39,18 @@ exports.quickCheckLocallyWithChildProc = function(test) {
     });
 };
 
+exports.quickCheckFailingWrite = function(test) {
+    test.expect(1);
+    var myServers = new RedisBroadcast({
+        primary: [6379, 'localhost']
+    }, { useChildProcess: false });
+    var myWriter = myServers.writeTo('primary');
+    myWriter.set('foo', undefined, function(err) {
+        test.ok(err);
+        myServers.shutdown(test.done.bind(test));
+    });
+};
+
 exports.jscoverage = function(test) {
     test.expect(3);
     jscoverage.coverageDetail();
