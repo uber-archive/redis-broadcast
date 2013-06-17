@@ -42,10 +42,10 @@ exports.jscoverage = function(test) {
                     touched ++;
             }
         }
+        lcov += "end_of_record\n";
         test.ok(touched); // Disable failures on this for now until full test suite is written
         //test.equal(total, touched, 'All lines of code exercised by the tests');
     });
-    lcov += "end_of_record\n";
     if(process.env.TRAVIS) coveralls.handleInput(lcov);
     test.done();
 };
