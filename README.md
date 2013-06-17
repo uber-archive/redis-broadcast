@@ -1,4 +1,4 @@
-# redis-broadcast
+# redis-broadcast [![Build Status](https://travis-ci.org/uber/redis-broadcast.png?branch=master)](https://travis-ci.org/uber/redis-broadcast) [![Dependency Status](https://david-dm.org/uber/redis-broadcast.png)](https://david-dm.org/uber/redis-broadcast) [![Coverage Status](https://coveralls.io/repos/uber/redis-broadcast/badge.png?branch=master)](https://coveralls.io/r/uber/redis-broadcast?branch=master)
 
 Write redis commands to a set of redises efficiently
 
