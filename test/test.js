@@ -27,6 +27,18 @@ exports.quickCheckChildProc = function(test) {
     });
 };
 
+exports.quickCheckLocallyWithChildProc = function(test) {
+    test.expect(1);
+    var myServers = new RedisBroadcast({
+        primary: [6379, 'localhost']
+    });
+    var myWriter = myServers.writeLocally('primary');
+    myWriter.set('foo', 'bar', function(err, result) {
+        test.ok(result);
+        myServers.shutdown(test.done.bind(test));
+    });
+};
+
 exports.jscoverage = function(test) {
     test.expect(3);
     jscoverage.coverageDetail();
