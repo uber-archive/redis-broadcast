@@ -99,6 +99,33 @@ exports.onlyConfirmOnce = function(test) {
     myWriter.setnx('hai', 'there', function(err, result) {
         test.equal(result[0].primary, 1);
         test.equal(result[1].secondary, 'OK');
+        myServers.shutdown(test.done.bind(test));
+    });
+};
+
+exports.onlyConfirmOnce2 = function(test) {
+    test.expect(2);
+    var myServers = new RedisBroadcast({
+        primary: [6379, 'localhost'],
+        secondary: [6379, 'localhost']
+    }, { onlyConfirmOnce: true });
+    var myWriter = myServers.writeTo('primary').thenTo('secondary');
+    myWriter.setnx('hai', 'there', function(err, result) {
+        test.equal(result.length, 1);
+        test.equal(result[0].primary, 0);
+        myServers.shutdown(test.done.bind(test));
+    });
+};
+
+exports.onlyConfirmOnceFailPath = function(test) {
+    test.expect(1);
+    var myServers = new RedisBroadcast({
+        primary: [6379, 'localhost'],
+        secondary: [6379, 'localhost']
+    }, { onlyConfirmOnce: true });
+    var myWriter = myServers.writeTo('primary').thenTo('secondary');
+    myWriter.setnx(undefined, undefined, function(err) {
+        test.ok(err);
         myServers.shutdown({ killChildProc: true }, test.done.bind(test));
     });
 };
