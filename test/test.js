@@ -3,6 +3,16 @@ jscoverage.enableCoverage(true);
 var coveralls = require('coveralls');
 var RedisBroadcast = jscoverage.require(module, '../lib/redis-broadcast');
 
+exports.before = function(test) {
+    test.expect(0);
+    var myServers = new RedisBroadcast({
+        primary: [6379, 'localhost']
+    });
+    myServers.writeTo('primary').flushall(function() {
+        myServers.shutdown(test.done.bind(test));
+    });
+};
+
 exports.quickCheck = function(test) {
     test.expect(1);
     var myServers = new RedisBroadcast({
@@ -60,7 +70,7 @@ exports.fakeChaining = function(test) {
     var myWriter = myServers.writeTo('primary').thenTo('secondary');
     myWriter.set('foo', 'bar', function(err, result) {
         test.equal(result.length, 2);
-        test.equal(result[0].primary[0], result[1].secondary[0]);
+        test.equal(result[0].primary, result[1].secondary);
         myServers.shutdown(test.done.bind(test));
     });
 };
@@ -74,7 +84,21 @@ exports.fakeChaining2 = function(test) {
     var myWriter = myServers.writeLocally('primary').thenLocally('secondary');
     myWriter.set('foo', 'bar', function(err, result) {
         test.equal(result.length, 2);
-        test.equal(result[0].primary[0], result[1].secondary[0]);
+        test.equal(result[0].primary, result[1].secondary);
+        myServers.shutdown(test.done.bind(test));
+    });
+};
+
+exports.onlyConfirmOnce = function(test) {
+    test.expect(2);
+    var myServers = new RedisBroadcast({
+        primary: [6379, 'localhost'],
+        secondary: [6379, 'localhost']
+    }, { onlyConfirmOnce: true });
+    var myWriter = myServers.writeTo('primary').thenTo('secondary');
+    myWriter.setnx('hai', 'there', function(err, result) {
+        test.equal(result[0].primary, 1);
+        test.equal(result[1].secondary, 'OK');
         myServers.shutdown({ killChildProc: true }, test.done.bind(test));
     });
 };

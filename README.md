@@ -24,17 +24,17 @@ var myRedisServers = new RedisBroadcast({
 var writePrimary = myRedisServers.writeTo('primary');
 writePrimary.set('foo', 'bar', callback);
 // Callback gets an object with the key being 'primary' and the value being an array of [err, result]
-// { primary: [null, 'OK'] }
+// { primary: 'OK' }
 
 // Write to all servers
 var writeAll = myRedisServers.writeTo('all');
 writeAll.set('true', false, callback);
 // Callback gets object of [err, result] arrays, keys matching server names
 // {
-//     primary: [null, 'OK'],
-//     secondary: [null, 'OK'],
-//     tertiary: [null, 'OK'],
-//     quaternary: [null, 'OK']
+//     primary: 'OK',
+//     secondary: 'OK',
+//     tertiary: 'OK',
+//     quaternary: 'OK'
 // }
 
 // Write to a pair of servers in parallel
@@ -42,8 +42,8 @@ var writePrimarySecondary = myRedisServers.writeTo(['primary', 'secondary']);
 writePrimarySecondary.set('fubar', true, callback);
 // Gets object of [err, result] arrays, keys matching server names
 // {
-//     primary: [null, 'OK'],
-//     secondary: [null, 'OK']
+//     primary: 'OK',
+//     secondary: 'OK'
 // }
 
 // Write to three servers in series, stopping if any returns an error
@@ -51,9 +51,9 @@ var write123 = myRedisServers.writeTo('primary').thenTo('secondary').thenTo('ter
 write123.set('hello', 'world', callback);
 // Gets array of objects of [err, result] arrays, keys matching server names, order of objects matching write order
 // [
-//     { primary: [null, 'OK'] },
-//     { secondary: [null, 'OK'] },
-//     { tertiary: [null, 'OK'] }
+//     { primary: 'OK' },
+//     { secondary: 'OK' },
+//     { tertiary: 'OK' }
 // ]
 
 // Write to primary, then all remaining servers in parallel if no error
@@ -62,11 +62,11 @@ writePrimaryThenRemaining.set('distributedOnlyIfSuccessful', true, callback);
 // Gets an array; first value is an object with the primary key and an [err, result] array value,
 // second is an object of [err, result] arrays, keys matching server names
 // [
-//     { primary: [null, 'OK'] },
+//     { primary: 'OK' },
 //     {
-//         secondary: [null, 'OK'],
-//         teritary: [null, 'OK'],
-//         quaternary: [null, 'OK']
+//         secondary: 'OK',
+//         teritary: 'OK',
+//         quaternary: 'OK'
 //     }
 // ]
 ```
