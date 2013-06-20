@@ -22,7 +22,7 @@
         "docco": "*",
         "nodeunit": "*",
         "jshint": "*",
-        "jscoverage": "*",
+        "jscoverage": "https://github.com/dfellis/jscoverage/archive/master.tar.gz",
         "coveralls": "*"
     },
     "scripts": {
