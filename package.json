@@ -16,7 +16,7 @@
     "dependencies": {
         "redis-manager": "*",
         "multitransport-jsonrpc": "*",
-        "when": "*"
+        "async": "*"
     },
     "devDependencies": {
         "docco": "*",

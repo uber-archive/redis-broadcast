@@ -86,65 +86,7 @@ exports.fakeChaining2 = function(test) {
     myWriter.set('foo', 'bar', function(err, result) {
         test.equal(result.length, 2);
         test.equal(result[0].primary, result[1].secondary);
-        myServers.shutdown(test.done.bind(test));
-    });
-};
-
-exports.onlyConfirmOnce = function(test) {
-    test.expect(2);
-    var myServers = new RedisBroadcast({
-        primary: [6379, 'localhost'],
-        secondary: [6379, 'localhost']
-    }, { onlyConfirmOnce: true });
-    var myWriter = myServers.writeTo('primary').thenTo('secondary');
-    myWriter.setnx('hai', 'there', function(err, result) {
-        test.equal(result[0].primary, 1);
-        test.equal(result[1].secondary, 'OK');
-        myServers.shutdown(test.done.bind(test));
-    });
-};
-
-exports.onlyConfirmOnce2 = function(test) {
-    test.expect(2);
-    var myServers = new RedisBroadcast({
-        primary: [6379, 'localhost'],
-        secondary: [6379, 'localhost']
-    }, { onlyConfirmOnce: true });
-    var myWriter = myServers.writeTo('primary').thenTo('secondary');
-    myWriter.setnx('hai', 'there', function(err, result) {
-        test.equal(result.length, 1);
-        test.equal(result[0].primary, 0);
-        myServers.shutdown(test.done.bind(test));
-    });
-};
-
-exports.onlyConfirmOnceFailPath = function(test) {
-    test.expect(1);
-    var myServers = new RedisBroadcast({
-        primary: [6379, 'localhost'],
-        secondary: [6379, 'localhost']
-    }, { onlyConfirmOnce: true });
-    var myWriter = myServers.writeTo('primary').thenTo('secondary');
-    myWriter.setnx(undefined, undefined, function(err) {
-        test.ok(err);
         myServers.shutdown({ killChildProc: true }, test.done.bind(test));
-    });
-};
-
-exports.onlyConfirmOnceFailPath2 = function(test) {
-    // This test contains dirty hacks to fake a redis server-side failure
-    // to reach code coverage needs. Must be the last test (besides the jscoverage test).
-    test.expect(1);
-    var myServers = new RedisBroadcast({
-        primary: [6379, 'localhost', { enable_offline_queue: false }],
-        secondary: [6379, 'localhost']
-    }, { useChildProcess: false, onlyConfirmOnce: true });
-    var myWriter = myServers.writeTo('primary').thenTo('secondary');
-    myServers.redisInstances.primary.end();
-    myWriter.setnx('foo', 'bar', function(err) {
-        test.ok(err);
-        myServers.redisInstances.secondary.end();
-        test.done();
     });
 };
 
