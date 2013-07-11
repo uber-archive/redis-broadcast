@@ -4,6 +4,9 @@ jscoverage.enableCoverage(true);
 var coveralls = require('coveralls');
 var RedisBroadcast = jscoverage.require(module, '../lib/redis-broadcast');
 
+// A before all that guarantees that the redis instance
+// used during testing is cleared and will not interfere
+// with expected results
 exports.before = function(test) {
     test.expect(0);
     var myServers = new RedisBroadcast({
@@ -14,6 +17,9 @@ exports.before = function(test) {
     });
 };
 
+// A simple, nonsensical use of RedisBroadcast to a single
+// server in the current process writes a value correctly.
+// A sanity check relevant in early development.
 exports.quickCheck = function(test) {
     test.expect(1);
     var myServers = new RedisBroadcast({
@@ -26,6 +32,8 @@ exports.quickCheck = function(test) {
     });
 };
 
+// The exact same test as above, but now doing the sanity
+// check in the child process.
 exports.quickCheckChildProc = function(test) {
     test.expect(1);
     var myServers = new RedisBroadcast({
@@ -38,6 +46,8 @@ exports.quickCheckChildProc = function(test) {
     });
 };
 
+// A check that writing locally even if a child process
+// is configured will still work.
 exports.quickCheckLocallyWithChildProc = function(test) {
     test.expect(1);
     var myServers = new RedisBroadcast({
@@ -50,6 +60,8 @@ exports.quickCheckLocallyWithChildProc = function(test) {
     });
 };
 
+// A check that errors from redis are returned correctly
+// through the ``redis-broadcast`` API.
 exports.quickCheckFailingWrite = function(test) {
     test.expect(1);
     var myServers = new RedisBroadcast({
@@ -62,6 +74,7 @@ exports.quickCheckFailingWrite = function(test) {
     });
 };
 
+// Confirmation that chaining requests functions as expected
 exports.fakeChaining = function(test) {
     test.expect(2);
     var myServers = new RedisBroadcast({
@@ -76,6 +89,7 @@ exports.fakeChaining = function(test) {
     });
 };
 
+// A similar confirmation, but all in the local process
 exports.fakeChaining2 = function(test) {
     test.expect(2);
     var myServers = new RedisBroadcast({
@@ -90,6 +104,7 @@ exports.fakeChaining2 = function(test) {
     });
 };
 
+// Code coverage reporting
 exports.jscoverage = function(test) {
     test.expect(3);
     jscoverage.coverageDetail();
