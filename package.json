@@ -19,7 +19,7 @@
         "async": "*"
     },
     "devDependencies": {
-        "docco": "*",
+        "docco-husky": "*",
         "nodeunit": "*",
         "jshint": "*",
         "jscoverage": "https://github.com/dfellis/jscoverage/archive/master.tar.gz",

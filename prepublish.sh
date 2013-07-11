@@ -4,7 +4,7 @@
 npm test
 
 # Build documentation and commit to the gh-pages branch, then go back to master branch
-docco lib/redis-manager.js
+docco-husky -name "redis-manager" lib test
 git stash
 git checkout gh-pages
 mv docs/* .
