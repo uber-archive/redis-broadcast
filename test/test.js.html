@@ -2,9 +2,10 @@
 </td><td class="code"><div class="highlight"><pre><span class="kd">var</span> <span class="nx">jscoverage</span> <span class="o">=</span> <span class="nx">global</span><span class="p">.</span><span class="nx">jscoverage</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;jscoverage&#39;</span><span class="p">);</span>
 <span class="nx">jscoverage</span><span class="p">.</span><span class="nx">enableCoverage</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span>
 <span class="kd">var</span> <span class="nx">coveralls</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;coveralls&#39;</span><span class="p">);</span>
-<span class="kd">var</span> <span class="nx">RedisBroadcast</span> <span class="o">=</span> <span class="nx">jscoverage</span><span class="p">.</span><span class="nx">require</span><span class="p">(</span><span class="nx">module</span><span class="p">,</span> <span class="s1">&#39;../lib/redis-broadcast&#39;</span><span class="p">);</span>
-
-<span class="nx">exports</span><span class="p">.</span><span class="nx">before</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">test</span><span class="p">)</span> <span class="p">{</span>
+<span class="kd">var</span> <span class="nx">RedisBroadcast</span> <span class="o">=</span> <span class="nx">jscoverage</span><span class="p">.</span><span class="nx">require</span><span class="p">(</span><span class="nx">module</span><span class="p">,</span> <span class="s1">&#39;../lib/redis-broadcast&#39;</span><span class="p">);</span></pre></div></td></tr><tr id="section-2"><td class="docs"><div class="pilwrap"><a href="#section-2" class="pilcrow">&#182;</a></div><p>A before all that guarantees that the redis instance
+used during testing is cleared and will not interfere
+with expected results</p>
+</td><td class="code"><div class="highlight"><pre><span class="nx">exports</span><span class="p">.</span><span class="nx">before</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">test</span><span class="p">)</span> <span class="p">{</span>
     <span class="nx">test</span><span class="p">.</span><span class="nx">expect</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
     <span class="kd">var</span> <span class="nx">myServers</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">RedisBroadcast</span><span class="p">({</span>
         <span class="nx">primary</span><span class="o">:</span> <span class="p">[</span><span class="mi">6379</span><span class="p">,</span> <span class="s1">&#39;localhost&#39;</span><span class="p">]</span>
@@ -12,9 +13,10 @@
     <span class="nx">myServers</span><span class="p">.</span><span class="nx">writeTo</span><span class="p">(</span><span class="s1">&#39;primary&#39;</span><span class="p">).</span><span class="nx">flushall</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
         <span class="nx">myServers</span><span class="p">.</span><span class="nx">shutdown</span><span class="p">(</span><span class="nx">test</span><span class="p">.</span><span class="nx">done</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">test</span><span class="p">));</span>
     <span class="p">});</span>
-<span class="p">};</span>
-
-<span class="nx">exports</span><span class="p">.</span><span class="nx">quickCheck</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">test</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">};</span></pre></div></td></tr><tr id="section-3"><td class="docs"><div class="pilwrap"><a href="#section-3" class="pilcrow">&#182;</a></div><p>A simple, nonsensical use of RedisBroadcast to a single
+server in the current process writes a value correctly.
+A sanity check relevant in early development.</p>
+</td><td class="code"><div class="highlight"><pre><span class="nx">exports</span><span class="p">.</span><span class="nx">quickCheck</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">test</span><span class="p">)</span> <span class="p">{</span>
     <span class="nx">test</span><span class="p">.</span><span class="nx">expect</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
     <span class="kd">var</span> <span class="nx">myServers</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">RedisBroadcast</span><span class="p">({</span>
         <span class="nx">primary</span><span class="o">:</span> <span class="p">[</span><span class="mi">6379</span><span class="p">,</span> <span class="s1">&#39;localhost&#39;</span><span class="p">]</span>
@@ -24,9 +26,9 @@
         <span class="nx">test</span><span class="p">.</span><span class="nx">ok</span><span class="p">(</span><span class="nx">result</span><span class="p">);</span>
         <span class="nx">myServers</span><span class="p">.</span><span class="nx">shutdown</span><span class="p">(</span><span class="nx">test</span><span class="p">.</span><span class="nx">done</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">test</span><span class="p">));</span>
     <span class="p">});</span>
-<span class="p">};</span>
-
-<span class="nx">exports</span><span class="p">.</span><span class="nx">quickCheckChildProc</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">test</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">};</span></pre></div></td></tr><tr id="section-4"><td class="docs"><div class="pilwrap"><a href="#section-4" class="pilcrow">&#182;</a></div><p>The exact same test as above, but now doing the sanity
+check in the child process.</p>
+</td><td class="code"><div class="highlight"><pre><span class="nx">exports</span><span class="p">.</span><span class="nx">quickCheckChildProc</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">test</span><span class="p">)</span> <span class="p">{</span>
     <span class="nx">test</span><span class="p">.</span><span class="nx">expect</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
     <span class="kd">var</span> <span class="nx">myServers</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">RedisBroadcast</span><span class="p">({</span>
         <span class="nx">primary</span><span class="o">:</span> <span class="p">[</span><span class="mi">6379</span><span class="p">,</span> <span class="s1">&#39;localhost&#39;</span><span class="p">]</span>
@@ -36,9 +38,9 @@
         <span class="nx">test</span><span class="p">.</span><span class="nx">ok</span><span class="p">(</span><span class="nx">result</span><span class="p">);</span>
         <span class="nx">myServers</span><span class="p">.</span><span class="nx">shutdown</span><span class="p">(</span><span class="nx">test</span><span class="p">.</span><span class="nx">done</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">test</span><span class="p">));</span>
     <span class="p">});</span>
-<span class="p">};</span>
-
-<span class="nx">exports</span><span class="p">.</span><span class="nx">quickCheckLocallyWithChildProc</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">test</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">};</span></pre></div></td></tr><tr id="section-5"><td class="docs"><div class="pilwrap"><a href="#section-5" class="pilcrow">&#182;</a></div><p>A check that writing locally even if a child process
+is configured will still work.</p>
+</td><td class="code"><div class="highlight"><pre><span class="nx">exports</span><span class="p">.</span><span class="nx">quickCheckLocallyWithChildProc</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">test</span><span class="p">)</span> <span class="p">{</span>
     <span class="nx">test</span><span class="p">.</span><span class="nx">expect</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
     <span class="kd">var</span> <span class="nx">myServers</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">RedisBroadcast</span><span class="p">({</span>
         <span class="nx">primary</span><span class="o">:</span> <span class="p">[</span><span class="mi">6379</span><span class="p">,</span> <span class="s1">&#39;localhost&#39;</span><span class="p">]</span>
@@ -48,9 +50,9 @@
         <span class="nx">test</span><span class="p">.</span><span class="nx">ok</span><span class="p">(</span><span class="nx">result</span><span class="p">);</span>
         <span class="nx">myServers</span><span class="p">.</span><span class="nx">shutdown</span><span class="p">(</span><span class="nx">test</span><span class="p">.</span><span class="nx">done</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">test</span><span class="p">));</span>
     <span class="p">});</span>
-<span class="p">};</span>
-
-<span class="nx">exports</span><span class="p">.</span><span class="nx">quickCheckFailingWrite</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">test</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">};</span></pre></div></td></tr><tr id="section-6"><td class="docs"><div class="pilwrap"><a href="#section-6" class="pilcrow">&#182;</a></div><p>A check that errors from redis are returned correctly
+through the <code>redis-broadcast</code> API.</p>
+</td><td class="code"><div class="highlight"><pre><span class="nx">exports</span><span class="p">.</span><span class="nx">quickCheckFailingWrite</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">test</span><span class="p">)</span> <span class="p">{</span>
     <span class="nx">test</span><span class="p">.</span><span class="nx">expect</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
     <span class="kd">var</span> <span class="nx">myServers</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">RedisBroadcast</span><span class="p">({</span>
         <span class="nx">primary</span><span class="o">:</span> <span class="p">[</span><span class="mi">6379</span><span class="p">,</span> <span class="s1">&#39;localhost&#39;</span><span class="p">]</span>
@@ -60,9 +62,8 @@
         <span class="nx">test</span><span class="p">.</span><span class="nx">ok</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
         <span class="nx">myServers</span><span class="p">.</span><span class="nx">shutdown</span><span class="p">(</span><span class="nx">test</span><span class="p">.</span><span class="nx">done</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">test</span><span class="p">));</span>
     <span class="p">});</span>
-<span class="p">};</span>
-
-<span class="nx">exports</span><span class="p">.</span><span class="nx">fakeChaining</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">test</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">};</span></pre></div></td></tr><tr id="section-7"><td class="docs"><div class="pilwrap"><a href="#section-7" class="pilcrow">&#182;</a></div><p>Confirmation that chaining requests functions as expected</p>
+</td><td class="code"><div class="highlight"><pre><span class="nx">exports</span><span class="p">.</span><span class="nx">fakeChaining</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">test</span><span class="p">)</span> <span class="p">{</span>
     <span class="nx">test</span><span class="p">.</span><span class="nx">expect</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
     <span class="kd">var</span> <span class="nx">myServers</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">RedisBroadcast</span><span class="p">({</span>
         <span class="nx">primary</span><span class="o">:</span> <span class="p">[</span><span class="mi">6379</span><span class="p">,</span> <span class="s1">&#39;localhost&#39;</span><span class="p">],</span>
@@ -74,9 +75,8 @@
         <span class="nx">test</span><span class="p">.</span><span class="nx">equal</span><span class="p">(</span><span class="nx">result</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">primary</span><span class="p">,</span> <span class="nx">result</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nx">secondary</span><span class="p">);</span>
         <span class="nx">myServers</span><span class="p">.</span><span class="nx">shutdown</span><span class="p">(</span><span class="nx">test</span><span class="p">.</span><span class="nx">done</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">test</span><span class="p">));</span>
     <span class="p">});</span>
-<span class="p">};</span>
-
-<span class="nx">exports</span><span class="p">.</span><span class="nx">fakeChaining2</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">test</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">};</span></pre></div></td></tr><tr id="section-8"><td class="docs"><div class="pilwrap"><a href="#section-8" class="pilcrow">&#182;</a></div><p>A similar confirmation, but all in the local process</p>
+</td><td class="code"><div class="highlight"><pre><span class="nx">exports</span><span class="p">.</span><span class="nx">fakeChaining2</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">test</span><span class="p">)</span> <span class="p">{</span>
     <span class="nx">test</span><span class="p">.</span><span class="nx">expect</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
     <span class="kd">var</span> <span class="nx">myServers</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">RedisBroadcast</span><span class="p">({</span>
         <span class="nx">primary</span><span class="o">:</span> <span class="p">[</span><span class="mi">6379</span><span class="p">,</span> <span class="s1">&#39;localhost&#39;</span><span class="p">],</span>
@@ -88,9 +88,8 @@
         <span class="nx">test</span><span class="p">.</span><span class="nx">equal</span><span class="p">(</span><span class="nx">result</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">primary</span><span class="p">,</span> <span class="nx">result</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nx">secondary</span><span class="p">);</span>
         <span class="nx">myServers</span><span class="p">.</span><span class="nx">shutdown</span><span class="p">({</span> <span class="nx">killChildProc</span><span class="o">:</span> <span class="kc">true</span> <span class="p">},</span> <span class="nx">test</span><span class="p">.</span><span class="nx">done</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">test</span><span class="p">));</span>
     <span class="p">});</span>
-<span class="p">};</span>
-
-<span class="nx">exports</span><span class="p">.</span><span class="nx">jscoverage</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">test</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">};</span></pre></div></td></tr><tr id="section-9"><td class="docs"><div class="pilwrap"><a href="#section-9" class="pilcrow">&#182;</a></div><p>Code coverage reporting</p>
+</td><td class="code"><div class="highlight"><pre><span class="nx">exports</span><span class="p">.</span><span class="nx">jscoverage</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">test</span><span class="p">)</span> <span class="p">{</span>
     <span class="nx">test</span><span class="p">.</span><span class="nx">expect</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
     <span class="nx">jscoverage</span><span class="p">.</span><span class="nx">coverageDetail</span><span class="p">();</span>
     <span class="kd">var</span> <span class="nx">coverageStats</span> <span class="o">=</span> <span class="nx">jscoverage</span><span class="p">.</span><span class="nx">coverageStats</span><span class="p">();</span>
@@ -101,4 +100,4 @@
     <span class="nx">test</span><span class="p">.</span><span class="nx">done</span><span class="p">();</span>
 <span class="p">};</span>
 
-</pre></div></td></tr></tbody></table><div id="generated">generated Wed Jul 10 2013 19:16:42 GMT-0700 (PDT)  </div><div id="projectname"><a href="../index.html">redis-manager</a></div></div></body></html>
+</pre></div></td></tr></tbody></table><div id="generated">generated Wed Jul 10 2013 23:16:09 GMT-0700 (PDT)  </div><div id="projectname"><a href="../index.html">redis-broadcast</a></div></div></body></html>

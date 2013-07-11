@@ -6,11 +6,10 @@
 <span class="kd">var</span> <span class="nx">fork</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;child_process&#39;</span><span class="p">).</span><span class="nx">fork</span><span class="p">;</span>
 <span class="kd">var</span> <span class="nx">FakeClient</span> <span class="o">=</span> <span class="nx">global</span><span class="p">.</span><span class="nx">jscoverage</span> <span class="o">?</span> <span class="nx">global</span><span class="p">.</span><span class="nx">jscoverage</span><span class="p">.</span><span class="nx">require</span><span class="p">(</span><span class="nx">module</span><span class="p">,</span> <span class="s1">&#39;./fake-redis-client&#39;</span><span class="p">)</span> <span class="o">:</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./fake-redis-client&#39;</span><span class="p">);</span>
 
-<span class="kd">var</span> <span class="nx">childProc</span><span class="p">;</span>
-
-<span class="kd">function</span> <span class="nx">RedisBroadcast</span><span class="p">(</span><span class="nx">servers</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+<span class="kd">var</span> <span class="nx">childProc</span><span class="p">;</span></pre></div></td></tr><tr id="section-2"><td class="docs"><div class="pilwrap"><a href="#section-2" class="pilcrow">&#182;</a></div><p>The primary <code>redis-broadcast</code> object that defines the interested servers and sets up the relevant configuration options,
+such as whether or not a child process should be used for writes to offload CPU burn on the parent process</p>
+</td><td class="code"><div class="highlight"><pre><span class="kd">function</span> <span class="nx">RedisBroadcast</span><span class="p">(</span><span class="nx">servers</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
     <span class="nx">options</span> <span class="o">=</span> <span class="nx">options</span> <span class="o">||</span> <span class="p">{};</span>
-    <span class="k">this</span><span class="p">.</span><span class="nx">onlyConfirmOnce</span> <span class="o">=</span> <span class="k">typeof</span><span class="p">(</span><span class="nx">options</span><span class="p">.</span><span class="nx">onlyConfirmOnce</span><span class="p">)</span> <span class="o">===</span> <span class="s1">&#39;boolean&#39;</span> <span class="o">?</span> <span class="nx">options</span><span class="p">.</span><span class="nx">onlyConfirmOnce</span> <span class="o">:</span> <span class="kc">true</span><span class="p">;</span> <span class="c1">// No Mr. Bond, I expect you to die silently.</span>
     <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nx">servers</span> <span class="o">||</span> <span class="k">typeof</span><span class="p">(</span><span class="nx">servers</span><span class="p">)</span> <span class="o">!==</span> <span class="s1">&#39;object&#39;</span><span class="p">)</span> <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;Invalid server defintion: &#39;</span> <span class="o">+</span> <span class="nx">servers</span><span class="p">);</span>
 
     <span class="k">this</span><span class="p">.</span><span class="nx">redisInstances</span> <span class="o">=</span> <span class="p">{};</span>
@@ -45,9 +44,10 @@
     <span class="p">}</span>
 
     <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="nx">RedisBroadcast</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">writeLocally</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">writeLocally</span><span class="p">(</span><span class="nx">servers</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">}</span></pre></div></td></tr><tr id="section-3"><td class="docs"><div class="pilwrap"><a href="#section-3" class="pilcrow">&#182;</a></div><p><code>writeLocally</code> and <code>writeTo</code> specify the server or servers a redis command
+should first be sent to. <code>writeLocally</code> requires that it be written in the
+parent process, while <code>writeTo</code> will use the child process if it exists.</p>
+</td><td class="code"><div class="highlight"><pre><span class="nx">RedisBroadcast</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">writeLocally</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">writeLocally</span><span class="p">(</span><span class="nx">servers</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">if</span><span class="p">(</span><span class="k">typeof</span><span class="p">(</span><span class="nx">servers</span><span class="p">)</span> <span class="o">===</span> <span class="s1">&#39;string&#39;</span><span class="p">)</span> <span class="nx">servers</span> <span class="o">=</span> <span class="p">[</span><span class="nx">servers</span><span class="p">];</span>
     <span class="kd">var</span> <span class="nx">queryOrder</span> <span class="o">=</span> <span class="nx">servers</span><span class="p">.</span><span class="nx">reduce</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">outObj</span><span class="p">,</span> <span class="nx">server</span><span class="p">)</span> <span class="p">{</span>
         <span class="nx">outObj</span><span class="p">[</span><span class="nx">server</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;locally&#39;</span><span class="p">;</span>
@@ -65,9 +65,10 @@
     <span class="p">},</span> <span class="p">{});</span>
     <span class="nx">queryOrder</span> <span class="o">=</span> <span class="p">[</span><span class="nx">queryOrder</span><span class="p">];</span>
     <span class="k">return</span> <span class="k">new</span> <span class="nx">FakeClient</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">queryOrder</span><span class="p">);</span>
-<span class="p">};</span>
-
-<span class="nx">RedisBroadcast</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">shutdown</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">shutdown</span><span class="p">(</span><span class="nx">options</span><span class="p">,</span> <span class="nx">done</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">};</span></pre></div></td></tr><tr id="section-4"><td class="docs"><div class="pilwrap"><a href="#section-4" class="pilcrow">&#182;</a></div><p>Cleans up the <code>redis-broadcast</code> instance and optionally shuts down
+the child process, this includes freeing all relevant <code>redis-manager</code>
+instances</p>
+</td><td class="code"><div class="highlight"><pre><span class="nx">RedisBroadcast</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">shutdown</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">shutdown</span><span class="p">(</span><span class="nx">options</span><span class="p">,</span> <span class="nx">done</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nx">done</span><span class="p">)</span> <span class="p">{</span>
         <span class="nx">done</span> <span class="o">=</span> <span class="nx">options</span><span class="p">;</span>
         <span class="nx">options</span> <span class="o">=</span> <span class="p">{};</span>
@@ -86,8 +87,7 @@
     <span class="k">if</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">childProcRedisInstances</span><span class="p">)</span> <span class="k">delete</span> <span class="k">this</span><span class="p">.</span><span class="nx">childProcRedisInstances</span><span class="p">;</span>
     <span class="k">if</span><span class="p">(</span><span class="nx">childProc</span> <span class="o">&amp;&amp;</span> <span class="nx">options</span><span class="p">.</span><span class="nx">killChildProc</span><span class="p">)</span> <span class="nx">childProc</span><span class="p">.</span><span class="nx">kill</span><span class="p">();</span>
     <span class="k">if</span><span class="p">(</span><span class="nx">done</span> <span class="k">instanceof</span> <span class="nb">Function</span><span class="p">)</span> <span class="nx">done</span><span class="p">();</span>
-<span class="p">};</span>
+<span class="p">};</span></pre></div></td></tr><tr id="section-5"><td class="docs"><div class="pilwrap"><a href="#section-5" class="pilcrow">&#182;</a></div><p>Export the library</p>
+</td><td class="code"><div class="highlight"><pre><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">RedisBroadcast</span><span class="p">;</span>
 
-<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">RedisBroadcast</span><span class="p">;</span>
-
-</pre></div></td></tr></tbody></table><div id="generated">generated Wed Jul 10 2013 19:16:42 GMT-0700 (PDT)  </div><div id="projectname"><a href="../index.html">redis-manager</a></div></div></body></html>
+</pre></div></td></tr></tbody></table><div id="generated">generated Wed Jul 10 2013 23:16:09 GMT-0700 (PDT)  </div><div id="projectname"><a href="../index.html">redis-broadcast</a></div></div></body></html>
