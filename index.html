@@ -1,0 +1,108 @@
+<!DOCTYPE html><html><head><title>README</title><meta http-equiv="Content-Type" content="text/html" charset="UTF-8"><link rel="stylesheet" media="all" href="./docco.css"></head><body><div id="container"><div id="background"></div><div id="jump_to">Jump To &hellip;<div id="jump_wrapper"><div id="jump_page"><a href="./index.html" class="source"><span class="file_name">README</span></a><a href="./lib/fake-redis-client.js.html" class="source "><span class="base_path">lib / </span><span class="file_name">fake-redis-client.js</span></a><a href="./lib/redis-broadcast-child.js.html" class="source "><span class="base_path">lib / </span><span class="file_name">redis-broadcast-child.js</span></a><a href="./lib/redis-broadcast-common.js.html" class="source "><span class="base_path">lib / </span><span class="file_name">redis-broadcast-common.js</span></a><a href="./lib/redis-broadcast.js.html" class="source "><span class="base_path">lib / </span><span class="file_name">redis-broadcast.js</span></a><a href="./test/test.js.html" class="source "><span class="base_path">test / </span><span class="file_name">test.js</span></a></div></div></div><table cellpadding="0" cellspacing="0"><thead><tr><th class="docs"></th><th class="code"></th></tr></thead><tbody><tr id="section"><td class="docs"><h1><a href="https://github.com/uber/redis-broadcast/">redis-broadcast
+</a></h1><p>Write redis commands to a set of redises efficiently</p><h3>Version</h3><p>0.1.0</p><h3>Contributors</h3><p><span class="gravatar"><img src="http://www.gravatar.com/avatar/6cc6a6013685c260a0fdeb13e42fab02"/><span>David Ellis &lt;d.f.ellis@ieee.org&gt;</span></span></p><h3>Repository</h3><p>git - git://git@github.com:uber/redis-broadcast.git</p><h3>Dependencies </h3><ul><li><b>redis-manager </b><span>*</span></li><li><b>multitransport-jsonrpc </b><span>*</span></li><li><b>async </b><span>*</span></li></ul><p><h3>Stats</h3><pre class="code_stats">
+http://cloc.sourceforge.net v 1.55  T=0.5 s (12.0 files/s, 678.0 lines/s)
+-------------------------------------------------------------------------------
+Language                     files          blank        comment           code
+-------------------------------------------------------------------------------
+Javascript                       5             31              2            283
+Bourne Shell                     1              9              5              9
+-------------------------------------------------------------------------------
+SUM:                             6             40              7            292
+-------------------------------------------------------------------------------
+</pre></p></td><td id="content" class="code"><h1>redis-broadcast</h1>
+
+<p><a href="http://badge.fury.io/js/redis-broadcast"><img src="https://badge.fury.io/js/redis-broadcast.png" alt="NPM version" title="" /></a> <a href="https://gemnasium.com/uber/redis-broadcast"><img src="https://gemnasium.com/uber/redis-broadcast.png" alt="Dependency Status" title="" /></a> <a href="https://travis-ci.org/uber/redis-broadcast"><img src="https://travis-ci.org/uber/redis-broadcast.png?branch=master" alt="Build Status" title="" /></a> <a href="https://coveralls.io/r/uber/redis-broadcast?branch=master"><img src="https://coveralls.io/repos/uber/redis-broadcast/badge.png?branch=master" alt="Coverage Status" title="" /></a></p>
+
+<p>Write redis commands to a set of redises efficiently</p>
+
+<h2>Install</h2>
+
+<pre><code>npm install redis-broadcast
+</code></pre>
+
+<h2>Usage</h2>
+
+<p>```js
+var RedisBroadcast = require('redis-broadcast');</p>
+
+<p>// Define the redis servers, and whether or not
+// they should be written to via child processes
+var myRedisServers = new RedisBroadcast({
+    primary: [6379, 'localhost'],
+    secondary: [6379, 'some.other.server'],
+    tertiary: [6379, 'and.another.server'],
+    quaternary: [6379, 'and.another']
+}, { useChildProcesses: false });</p>
+
+<p>// Write to only one server
+var writePrimary = myRedisServers.writeTo('primary');
+writePrimary.set('foo', 'bar', callback);
+// Callback gets an object with the key being 'primary' and the value being an array of [err, result]
+// { primary: 'OK' }</p>
+
+<p>// Write to all servers
+var writeAll = myRedisServers.writeTo('all');
+writeAll.set('true', false, callback);
+// Callback gets object of [err, result] arrays, keys matching server names
+// {
+//     primary: 'OK',
+//     secondary: 'OK',
+//     tertiary: 'OK',
+//     quaternary: 'OK'
+// }</p>
+
+<p>// Write to a pair of servers in parallel
+var writePrimarySecondary = myRedisServers.writeTo(['primary', 'secondary']);
+writePrimarySecondary.set('fubar', true, callback);
+// Gets object of [err, result] arrays, keys matching server names
+// {
+//     primary: 'OK',
+//     secondary: 'OK'
+// }</p>
+
+<p>// Write to three servers in series, stopping if any returns an error
+var write123 = myRedisServers.writeTo('primary').thenTo('secondary').thenTo('tertiary');
+write123.set('hello', 'world', callback);
+// Gets array of objects of [err, result] arrays, keys matching server names, order of objects matching write order
+// [
+//     { primary: 'OK' },
+//     { secondary: 'OK' },
+//     { tertiary: 'OK' }
+// ]</p>
+
+<p>// Write to primary, then all remaining servers in parallel if no error
+var writePrimaryThenRemaining = myRedisServers.writeTo('primary').thenTo('remaining');
+writePrimaryThenRemaining.set('distributedOnlyIfSuccessful', true, callback);
+// Gets an array; first value is an object with the primary key and an [err, result] array value,
+// second is an object of [err, result] arrays, keys matching server names
+// [
+//     { primary: 'OK' },
+//     {
+//         secondary: 'OK',
+//         teritary: 'OK',
+//         quaternary: 'OK'
+//     }
+// ]
+```</p>
+
+<h2>License (MIT)</h2>
+
+<p>Copyright (C) 2013 by Uber Technologies, Inc</p>
+
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:</p>
+
+<p>The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.</p>
+
+<p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.</p>  </td></tr></tbody></table><div id="generated">generated Wed Jul 10 2013 19:24:14 GMT-0700 (PDT)  </div></div></body></html>
