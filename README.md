@@ -1,4 +1,6 @@
-# redis-broadcast [![Dependency Status](https://gemnasium.com/uber/redis-broadcast.png)](https://gemnasium.com/uber/redis-broadcast) [![Build Status](https://travis-ci.org/uber/redis-broadcast.png?branch=master)](https://travis-ci.org/uber/redis-broadcast) [![Coverage Status](https://coveralls.io/repos/uber/redis-broadcast/badge.png?branch=master)](https://coveralls.io/r/uber/redis-broadcast?branch=master)
+# redis-broadcast
+
+[![NPM version](https://badge.fury.io/js/redis-broadcast.png)](http://badge.fury.io/js/redis-broadcast) [![Dependency Status](https://gemnasium.com/uber/redis-broadcast.png)](https://gemnasium.com/uber/redis-broadcast) [![Build Status](https://travis-ci.org/uber/redis-broadcast.png?branch=master)](https://travis-ci.org/uber/redis-broadcast) [![Coverage Status](https://coveralls.io/repos/uber/redis-broadcast/badge.png?branch=master)](https://coveralls.io/r/uber/redis-broadcast?branch=master)
 
 Write redis commands to a set of redises efficiently
 
