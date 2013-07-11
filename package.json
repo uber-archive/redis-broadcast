@@ -3,7 +3,7 @@
 		"David Ellis <d.f.ellis@ieee.org>"
 	],
 	"name": "redis-broadcast",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Write redis commands to a set of redises efficiently",
     "keywords": ["redis", "broadcast"],
     "homepage": "https://github.com/uber/redis-broadcast/",
