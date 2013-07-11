@@ -9,8 +9,6 @@ git stash
 git checkout gh-pages
 mv docs/* .
 rmdir docs
-rm index.html
-mv redis-manager.html index.html
 git commit -am "Automatic documentation for version $npm_package_version"
 git checkout master
 git stash pop
