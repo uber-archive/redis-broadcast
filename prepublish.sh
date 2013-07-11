@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Bail immediately on on error
+set -e
+
 # Make sure tests pass before publishing
 npm test
 
