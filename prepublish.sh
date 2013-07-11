@@ -7,6 +7,7 @@ npm test
 docco-husky -name "redis-broadcast" lib test
 git stash
 git checkout gh-pages
+rm -rf lib test
 mv docs/* .
 rmdir docs
 git commit -am "Automatic documentation for version $npm_package_version"
