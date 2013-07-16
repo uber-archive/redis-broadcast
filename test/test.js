@@ -129,7 +129,37 @@ exports.customMethods = function(test) {
         test.equal(result[1].secondary, 'OK');
         myWriter.setnxOnce('test', 'now', function(err) {
             test.ok(!!err);
-            myServers.shutdown({ killChildProc: true}, test.done.bind(test));
+            myServers.shutdown(test.done.bind(test));
+        });
+    });
+};
+
+exports.customMethods2 = function(test) {
+    test.expect(4);
+    var myServers = new RedisBroadcast({
+        primary: [6379, 'localhost'],
+        secondary: [6379, 'localhost']
+    }, {
+        customMethods: {
+            setnxOnce: [ function setnxOnce(key, val, callback) {
+                this.setnx(key, val, function(err, result) {
+                    if(err || !result) {
+                        callback(err || new Error('key already set'));
+                    } else {
+                        callback(null, result);
+                    }
+                });
+            }, 'set' ]
+        }
+    });
+    var myWriter = myServers.writeLocally('primary').thenTo('secondary');
+    myWriter.setnxOnce('test2', 'now', function(err, result) {
+        test.equal(result.length, 2);
+        test.equal(result[0].primary, 1);
+        test.equal(result[1].secondary, 'OK');
+        myWriter.setnxOnce('test2', 'now', function(err) {
+            test.ok(!!err);
+            myServers.shutdown({ killChildProc: true }, test.done.bind(test));
         });
     });
 };

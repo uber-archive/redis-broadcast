@@ -20,7 +20,23 @@ var myRedisServers = new RedisBroadcast({
     secondary: [6379, 'some.other.server'],
     tertiary: [6379, 'and.another.server'],
     quaternary: [6379, 'and.another']
-}, { useChildProcesses: false });
+}, {
+    useChildProcesses: false,
+    customMethods: {
+        setnxOnce: [
+            function setnxOnce(key, val, callback) {
+                this.setnx(key, val, function(err, result) {
+                    if(err || !result) {
+                        callback(err || new Error('key already defined'));
+                    } else {
+                        callback(null, result);
+                    }
+                });
+            },
+            'set'
+        ]
+    }
+});
 
 // Write to only one server
 var writePrimary = myRedisServers.writeTo('primary');
@@ -67,8 +83,22 @@ writePrimaryThenRemaining.set('distributedOnlyIfSuccessful', true, callback);
 //     { primary: 'OK' },
 //     {
 //         secondary: 'OK',
-//         teritary: 'OK',
+//         tertiary: 'OK',
 //         quaternary: 'OK'
+//     }
+// ]
+
+// Write to primary, then all remaining servers in parallel if key doesn't already exist.
+// NOTE: Custom functions don't fully work on child processes, yet. High on TODO list.
+var writePrimaryThenRemainingIfNew = myRedisServers.writeLocally('primary').thenTo('remaining');
+writePrimaryThenRemainingIfNew.setnxOnce('newkey', true, callback);
+// Gets an array, the first array element gets the results of setnx, the second gets the results of set, if called
+// [
+//     { primary: 1 },
+//     {
+//         secondary: 'OK',
+//         tertiary: 'OK',
+//         quaternary: 'OK
 //     }
 // ]
 ```
