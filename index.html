@@ -1,13 +1,13 @@
 <!DOCTYPE html><html><head><title>README</title><meta http-equiv="Content-Type" content="text/html" charset="UTF-8"><link rel="stylesheet" media="all" href="./docco.css"></head><body><div id="container"><div id="background"></div><div id="jump_to">Jump To &hellip;<div id="jump_wrapper"><div id="jump_page"><a href="./index.html" class="source"><span class="file_name">README</span></a><a href="./lib/fake-redis-client.js.html" class="source "><span class="base_path">lib / </span><span class="file_name">fake-redis-client.js</span></a><a href="./lib/redis-broadcast-child.js.html" class="source "><span class="base_path">lib / </span><span class="file_name">redis-broadcast-child.js</span></a><a href="./lib/redis-broadcast-common.js.html" class="source "><span class="base_path">lib / </span><span class="file_name">redis-broadcast-common.js</span></a><a href="./lib/redis-broadcast.js.html" class="source "><span class="base_path">lib / </span><span class="file_name">redis-broadcast.js</span></a><a href="./test/test.js.html" class="source "><span class="base_path">test / </span><span class="file_name">test.js</span></a></div></div></div><table cellpadding="0" cellspacing="0"><thead><tr><th class="docs"></th><th class="code"></th></tr></thead><tbody><tr id="section"><td class="docs"><h1><a href="https://github.com/uber/redis-broadcast/">redis-broadcast
-</a></h1><p>Write redis commands to a set of redises efficiently</p><h3>Version</h3><p>0.1.2</p><h3>Contributors</h3><p><span class="gravatar"><img src="http://www.gravatar.com/avatar/6cc6a6013685c260a0fdeb13e42fab02"/><span>David Ellis &lt;d.f.ellis@ieee.org&gt;</span></span></p><h3>Repository</h3><p>git - git://git@github.com:uber/redis-broadcast.git</p><h3>Dependencies </h3><ul><li><b>redis-manager </b><span>*</span></li><li><b>multitransport-jsonrpc </b><span>*</span></li><li><b>async </b><span>*</span></li></ul><p><h3>Stats</h3><pre class="code_stats">
-http://cloc.sourceforge.net v 1.55  T=0.5 s (12.0 files/s, 724.0 lines/s)
+</a></h1><p>Write redis commands to a set of redises efficiently</p><h3>Version</h3><p>0.1.3</p><h3>Contributors</h3><p><span class="gravatar"><img src="http://www.gravatar.com/avatar/6cc6a6013685c260a0fdeb13e42fab02"/><span>David Ellis &lt;d.f.ellis@ieee.org&gt;</span></span></p><h3>Repository</h3><p>git - git://git@github.com:uber/redis-broadcast.git</p><h3>Dependencies </h3><ul><li><b>redis-manager </b><span>*</span></li><li><b>multitransport-jsonrpc </b><span>*</span></li><li><b>async </b><span>*</span></li></ul><p><h3>Stats</h3><pre class="code_stats">
+http://cloc.sourceforge.net v 1.55  T=0.5 s (12.0 files/s, 920.0 lines/s)
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-Javascript                       5             29             40            270
+Javascript                       5             31             46            360
 Bourne Shell                     1              9              5              9
 -------------------------------------------------------------------------------
-SUM:                             6             38             45            279
+SUM:                             6             40             51            369
 -------------------------------------------------------------------------------
 </pre></p></td><td id="content" class="code"><h1>redis-broadcast</h1>
 
@@ -32,7 +32,23 @@ var myRedisServers = new RedisBroadcast({
     secondary: [6379, 'some.other.server'],
     tertiary: [6379, 'and.another.server'],
     quaternary: [6379, 'and.another']
-}, { useChildProcesses: false });</p>
+}, {
+    useChildProcesses: false,
+    customMethods: {
+        setnxOnce: [
+            function setnxOnce(key, val, callback) {
+                this.setnx(key, val, function(err, result) {
+                    if(err || !result) {
+                        callback(err || new Error('key already defined'));
+                    } else {
+                        callback(null, result);
+                    }
+                });
+            },
+            'set'
+        ]
+    }
+});</p>
 
 <p>// Write to only one server
 var writePrimary = myRedisServers.writeTo('primary');
@@ -79,8 +95,22 @@ writePrimaryThenRemaining.set('distributedOnlyIfSuccessful', true, callback);
 //     { primary: 'OK' },
 //     {
 //         secondary: 'OK',
-//         teritary: 'OK',
+//         tertiary: 'OK',
 //         quaternary: 'OK'
+//     }
+// ]</p>
+
+<p>// Write to primary, then all remaining servers in parallel if key doesn't already exist.
+// NOTE: Custom functions don't fully work on child processes, yet. High on TODO list.
+var writePrimaryThenRemainingIfNew = myRedisServers.writeLocally('primary').thenTo('remaining');
+writePrimaryThenRemainingIfNew.setnxOnce('newkey', true, callback);
+// Gets an array, the first array element gets the results of setnx, the second gets the results of set, if called
+// [
+//     { primary: 1 },
+//     {
+//         secondary: 'OK',
+//         tertiary: 'OK',
+//         quaternary: 'OK
 //     }
 // ]
 ```</p>
@@ -105,4 +135,4 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.</p>  </td></tr></tbody></table><div id="generated">generated Fri Jul 12 2013 08:02:14 GMT-0700 (PDT)  </div><div id="projectname"><a href="./index.html">redis-broadcast</a></div></div></body></html>
+THE SOFTWARE.</p>  </td></tr></tbody></table><div id="generated">generated Tue Jul 16 2013 15:09:03 GMT-0700 (PDT)  </div><div id="projectname"><a href="./index.html">redis-broadcast</a></div></div></body></html>
