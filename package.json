@@ -16,7 +16,8 @@
     "dependencies": {
         "redis-manager": "*",
         "multitransport-jsonrpc": "*",
-        "async": "*"
+        "async": "*",
+        "lambda-js": ">=0.1.5"
     },
     "devDependencies": {
         "docco-husky": "*",

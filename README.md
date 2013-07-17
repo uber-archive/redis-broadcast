@@ -89,8 +89,8 @@ writePrimaryThenRemaining.set('distributedOnlyIfSuccessful', true, callback);
 // ]
 
 // Write to primary, then all remaining servers in parallel if key doesn't already exist.
-// NOTE: Custom functions don't fully work on child processes, yet. High on TODO list.
-var writePrimaryThenRemainingIfNew = myRedisServers.writeLocally('primary').thenTo('remaining');
+// NOTE: Custom functions must be 'pure' (not closures) to work on the child process.
+var writePrimaryThenRemainingIfNew = myRedisServers.writeTo('primary').thenTo('remaining');
 writePrimaryThenRemainingIfNew.setnxOnce('newkey', true, callback);
 // Gets an array, the first array element gets the results of setnx, the second gets the results of set, if called
 // [
