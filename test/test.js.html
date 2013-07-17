@@ -144,6 +144,36 @@ through the <code>redis-broadcast</code> API.</p>
         <span class="nx">test</span><span class="p">.</span><span class="nx">equal</span><span class="p">(</span><span class="nx">result</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nx">secondary</span><span class="p">,</span> <span class="s1">&#39;OK&#39;</span><span class="p">);</span>
         <span class="nx">myWriter</span><span class="p">.</span><span class="nx">setnxOnce</span><span class="p">(</span><span class="s1">&#39;test2&#39;</span><span class="p">,</span> <span class="s1">&#39;now&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
             <span class="nx">test</span><span class="p">.</span><span class="nx">ok</span><span class="p">(</span><span class="o">!!</span><span class="nx">err</span><span class="p">);</span>
+            <span class="nx">myServers</span><span class="p">.</span><span class="nx">shutdown</span><span class="p">(</span><span class="nx">test</span><span class="p">.</span><span class="nx">done</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">test</span><span class="p">));</span>
+        <span class="p">});</span>
+    <span class="p">});</span>
+<span class="p">};</span>
+
+<span class="nx">exports</span><span class="p">.</span><span class="nx">customMethods3</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">test</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">test</span><span class="p">.</span><span class="nx">expect</span><span class="p">(</span><span class="mi">4</span><span class="p">);</span>
+    <span class="kd">var</span> <span class="nx">myServers</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">RedisBroadcast</span><span class="p">({</span>
+        <span class="nx">primary</span><span class="o">:</span> <span class="p">[</span><span class="mi">6379</span><span class="p">,</span> <span class="s1">&#39;localhost&#39;</span><span class="p">],</span>
+        <span class="nx">secondary</span><span class="o">:</span> <span class="p">[</span><span class="mi">6379</span><span class="p">,</span> <span class="s1">&#39;localhost&#39;</span><span class="p">]</span>
+    <span class="p">},</span> <span class="p">{</span>
+        <span class="nx">customMethods</span><span class="o">:</span> <span class="p">{</span>
+            <span class="nx">setnxOnce</span><span class="o">:</span> <span class="p">[</span> <span class="kd">function</span> <span class="nx">setnxOnce</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="nx">val</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">this</span><span class="p">.</span><span class="nx">setnx</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="nx">val</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">result</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">if</span><span class="p">(</span><span class="nx">err</span> <span class="o">||</span> <span class="o">!</span><span class="nx">result</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="nx">callback</span><span class="p">(</span><span class="nx">err</span> <span class="o">||</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;key already set&#39;</span><span class="p">));</span>
+                    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                        <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">result</span><span class="p">);</span>
+                    <span class="p">}</span>
+                <span class="p">});</span>
+            <span class="p">},</span> <span class="s1">&#39;set&#39;</span> <span class="p">]</span>
+        <span class="p">}</span>
+    <span class="p">});</span>
+    <span class="kd">var</span> <span class="nx">myWriter</span> <span class="o">=</span> <span class="nx">myServers</span><span class="p">.</span><span class="nx">writeTo</span><span class="p">(</span><span class="s1">&#39;primary&#39;</span><span class="p">).</span><span class="nx">thenTo</span><span class="p">(</span><span class="s1">&#39;secondary&#39;</span><span class="p">);</span>
+    <span class="nx">myWriter</span><span class="p">.</span><span class="nx">setnxOnce</span><span class="p">(</span><span class="s1">&#39;test3&#39;</span><span class="p">,</span> <span class="s1">&#39;now&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">result</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">test</span><span class="p">.</span><span class="nx">equal</span><span class="p">(</span><span class="nx">result</span><span class="p">.</span><span class="nx">length</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+        <span class="nx">test</span><span class="p">.</span><span class="nx">equal</span><span class="p">(</span><span class="nx">result</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">primary</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+        <span class="nx">test</span><span class="p">.</span><span class="nx">equal</span><span class="p">(</span><span class="nx">result</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nx">secondary</span><span class="p">,</span> <span class="s1">&#39;OK&#39;</span><span class="p">);</span>
+        <span class="nx">myWriter</span><span class="p">.</span><span class="nx">setnxOnce</span><span class="p">(</span><span class="s1">&#39;test3&#39;</span><span class="p">,</span> <span class="s1">&#39;now&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">test</span><span class="p">.</span><span class="nx">ok</span><span class="p">(</span><span class="o">!!</span><span class="nx">err</span><span class="p">);</span>
             <span class="nx">myServers</span><span class="p">.</span><span class="nx">shutdown</span><span class="p">({</span> <span class="nx">killChildProc</span><span class="o">:</span> <span class="kc">true</span> <span class="p">},</span> <span class="nx">test</span><span class="p">.</span><span class="nx">done</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="nx">test</span><span class="p">));</span>
         <span class="p">});</span>
     <span class="p">});</span>
@@ -154,4 +184,4 @@ through the <code>redis-broadcast</code> API.</p>
     <span class="nx">test</span><span class="p">.</span><span class="nx">done</span><span class="p">();</span>
 <span class="p">};</span>
 
-</pre></div></td></tr></tbody></table><div id="generated">generated Tue Jul 16 2013 15:09:04 GMT-0700 (PDT)  </div><div id="projectname"><a href="../index.html">redis-broadcast</a></div></div></body></html>
+</pre></div></td></tr></tbody></table><div id="generated">generated Wed Jul 17 2013 12:18:13 GMT-0700 (PDT)  </div><div id="projectname"><a href="../index.html">redis-broadcast</a></div></div></body></html>
