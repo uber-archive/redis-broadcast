@@ -189,6 +189,44 @@ exports.customMethods3 = function(test) {
         test.equal(result[1].secondary, 'OK');
         myWriter.setnxOnce('test3', 'now', function(err) {
             test.ok(!!err);
+            myServers.shutdown(test.done.bind(test));
+        });
+    });
+};
+
+exports.broadcastAll = function(test) {
+    test.expect(5);
+    var myServers = new RedisBroadcast({
+        primary: [6379, 'localhost'],
+        secondary: [6379, 'localhost', { select: 2 }]
+    });
+    var myWriter = myServers.writeTo('all');
+    myWriter.set('test4', 'blah', function(err, result) {
+        test.equal(result.length, 1);
+        test.equal(result[0].primary, 'OK');
+        test.equal(result[0].secondary, 'OK');
+        myWriter.get('test4', function(err, result) {
+            test.equal(result[0].primary, 'blah');
+            test.equal(result[0].secondary, 'blah');
+            myServers.shutdown(test.done.bind(test));
+        });
+    });
+};
+
+exports.broadcastRemaining = function(test) {
+    test.expect(5);
+    var myServers = new RedisBroadcast({
+        primary: [6379, 'localhost'],
+        secondary: [6379, 'localhost', { select: 2 }]
+    });
+    var myWriter = myServers.writeTo('primary').thenTo('remaining');
+    myWriter.set('test5', 'derp', function(err, result) {
+        test.equal(result.length, 2);
+        test.equal(result[0].primary, 'OK');
+        test.equal(result[1].secondary, 'OK');
+        myWriter.get('test5', function(err, result) {
+            test.equal(result[0].primary, 'derp');
+            test.equal(result[1].secondary, 'derp');
             myServers.shutdown({ killChildProc: true }, test.done.bind(test));
         });
     });
