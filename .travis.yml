@@ -1,6 +1,5 @@
 language: node_js
 node_js:
-    - 0.6
     - 0.8
     - 0.10
 
@@ -10,3 +9,5 @@ notifications:
             - dispatch@uber.com
         on_success: change
         on_failure: change
+
+services: redis
