@@ -194,6 +194,33 @@ exports.customMethods3 = function(test) {
     });
 };
 
+exports.failingCustomMethod = function(test) {
+    test.expect(4);
+    var myServers = new RedisBroadcast({
+        primary: [6379, 'localhost'],
+        secondary: [6379, 'localhost']
+    }, {
+        customMethods: {
+            setnxIncorrectly: [ 'set', function setnxOnce(key, val, callback) {
+                this.setnx(key, val, function(err, result) {
+                    if(err || !result) {
+                        callback(err || 'key already set');
+                    } else {
+                        callback(null, result);
+                    }
+                });
+            } ]
+        }
+    });
+    var myWriter = myServers.writeLocally('primary').thenTo('secondary');
+    myWriter.setnxIncorrectly('test2', 'now', function(err, result) {
+        test.equal(err.length, 2);
+        test.equal(result.length, 1);
+        test.equal(result[0].primary, 'OK');
+        test.equal(err[1].secondary, 'key already set');
+        myServers.shutdown(test.done.bind(test));
+    });
+};
 exports.broadcastAll = function(test) {
     test.expect(5);
     var myServers = new RedisBroadcast({

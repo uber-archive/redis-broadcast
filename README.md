@@ -41,33 +41,35 @@ var myRedisServers = new RedisBroadcast({
 // Write to only one server
 var writePrimary = myRedisServers.writeTo('primary');
 writePrimary.set('foo', 'bar', callback);
-// Callback gets an object with the key being 'primary' and the value being an array of [err, result]
-// { primary: 'OK' }
+// Callback gets error and result arrays. The array position indicates which group the request belongs to,
+// in this case there is only one group. Each array value is an object whose keys are the names of the servers
+// and whose values are the redis responses. If there were no errors, the error array is omitted.
+// undefined, [{ primary: 'OK' }]
 
-// Write to all servers
+// Write to all servers in parallel
 var writeAll = myRedisServers.writeTo('all');
 writeAll.set('true', false, callback);
-// Callback gets object of [err, result] arrays, keys matching server names
-// {
+// Callback gets error and result arrays of objects, keys matching server names
+// [{
 //     primary: 'OK',
 //     secondary: 'OK',
 //     tertiary: 'OK',
 //     quaternary: 'OK'
-// }
+// }]
 
 // Write to a pair of servers in parallel
 var writePrimarySecondary = myRedisServers.writeTo(['primary', 'secondary']);
 writePrimarySecondary.set('fubar', true, callback);
-// Gets object of [err, result] arrays, keys matching server names
-// {
+// Gets error and result arrays of objects, keys matching server names
+// [{
 //     primary: 'OK',
 //     secondary: 'OK'
-// }
+// }]
 
 // Write to three servers in series, stopping if any returns an error
 var write123 = myRedisServers.writeTo('primary').thenTo('secondary').thenTo('tertiary');
 write123.set('hello', 'world', callback);
-// Gets array of objects of [err, result] arrays, keys matching server names, order of objects matching write order
+// Gets error and result arrays of objects, keys matching server names, order of objects matching write order
 // [
 //     { primary: 'OK' },
 //     { secondary: 'OK' },
@@ -77,8 +79,8 @@ write123.set('hello', 'world', callback);
 // Write to primary, then all remaining servers in parallel if no error
 var writePrimaryThenRemaining = myRedisServers.writeTo('primary').thenTo('remaining');
 writePrimaryThenRemaining.set('distributedOnlyIfSuccessful', true, callback);
-// Gets an array; first value is an object with the primary key and an [err, result] array value,
-// second is an object of [err, result] arrays, keys matching server names
+// Gets error and result arrays of objects; first value is an object,
+// second is an object, keys matching server names
 // [
 //     { primary: 'OK' },
 //     {
@@ -92,7 +94,7 @@ writePrimaryThenRemaining.set('distributedOnlyIfSuccessful', true, callback);
 // NOTE: Custom functions must be 'pure' (not closures) to work on the child process.
 var writePrimaryThenRemainingIfNew = myRedisServers.writeTo('primary').thenTo('remaining');
 writePrimaryThenRemainingIfNew.setnxOnce('newkey', true, callback);
-// Gets an array, the first array element gets the results of setnx, the second gets the results of set, if called
+// Gets error and result arrays of objects, the first array element gets the results of setnx, the second gets the results of set, if called
 // [
 //     { primary: 1 },
 //     {

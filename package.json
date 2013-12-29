@@ -15,8 +15,7 @@
 	"main": "lib/redis-broadcast.js",
     "dependencies": {
         "redis-manager": "*",
-        "multitransport-jsonrpc": "*",
-        "async": "*",
+        "multitransport-jsonrpc": ">=0.4.0",
         "lambda-js": ">=0.1.5"
     },
     "devDependencies": {
